@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
-import 'home_screen.dart';
-import 'family_screen.dart';
+import '../core/theme/app_theme.dart';
+import '../services/auth_service.dart';
 import 'contact_screen.dart';
+import 'family_screen.dart';
+import 'home_screen.dart';
+import 'login_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -26,6 +29,55 @@ class _MainScreenState extends State<MainScreen> {
     'Contact',
   ];
 
+  Future<void> _confirmLogout(BuildContext context) async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF222222),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Color(0xFF38312B)),
+        ),
+        title: const Text(
+          'Déconnexion',
+          style: TextStyle(
+            color: AppTheme.sand,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: const Text(
+          'Êtes-vous sûr de vouloir vous déconnecter de votre session ?',
+          style: TextStyle(color: AppTheme.warmGrey),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text(
+              'Annuler',
+              style: TextStyle(color: AppTheme.warmGrey),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.burntOrange,
+              foregroundColor: AppTheme.sand,
+            ),
+            child: const Text('Se déconnecter'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout == true && context.mounted) {
+      AuthService.logout();
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        (route) => false,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,6 +89,13 @@ class _MainScreenState extends State<MainScreen> {
             letterSpacing: 1,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout_rounded),
+            tooltip: 'Se déconnecter',
+            onPressed: () => _confirmLogout(context),
+          ),
+        ],
       ),
 
       body: IndexedStack(
